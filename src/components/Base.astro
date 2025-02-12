@@ -1,0 +1,30 @@
+---
+import "../styles/base.css";
+import Footer from "../components/Footer.astro";
+
+interface Props {
+    title?: string;
+    noFooter?: boolean;
+}
+
+const { title, noFooter } = Astro.props;
+---
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="viewport" content="width=device-width" />
+        <meta name="generator" content={Astro.generator} />
+        <title>{title || "Echelon"}</title>
+    </head>
+    <body
+        class="bg-background dark:bg-background-dark text-text dark:text-text-dark p-4 pt-4 flex flex-col min-h-screen max-w-screen mx-auto justify-center text-center"
+    >
+        <main class="mt-10 grow flex flex-col self-center text-xl">
+            <slot />
+        </main>
+
+        {!noFooter && <Footer />}
+    </body>
+</html>

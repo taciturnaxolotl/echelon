@@ -1,0 +1,80 @@
+---
+import '../styles/base.css';
+import Base from '../components/Base.astro';
+
+import { Image } from 'astro:assets';
+import logo from '../assets/echelon.png';
+
+import { createSession, getSession, gracePeriod } from "../utils/auth/auth";
+import type { Session } from "../utils/auth/auth";
+
+let session: Session | null = null;
+const sessionCookie = Astro.cookies.get("session")?.value;
+if (sessionCookie !== undefined) {
+	session = getSession(sessionCookie);
+}
+
+let errorMsg: string | null = Astro.url.searchParams.get("error");
+
+if (
+	Astro.request.method === "GET" &&
+	Astro.url.searchParams.get("code") !== null &&
+	!session
+) {
+	try {
+		const code = Astro.url.searchParams.get("code");
+		if (!code) {
+			throw new Error("No code provided");
+		}
+
+		const jwtToken = await createSession(code, Astro.url.origin);
+
+		if (!jwtToken) {
+			throw new Error("Failed to create session");
+		}
+
+		// reload the page to remove the code from the URL but keep state
+		return new Response(null, {
+			status: 303,
+			headers: {
+			location: `${Astro.url.pathname}?checkSession=true`,
+				"Set-Cookie": `session=${jwtToken.token}; Path=/; HttpOnly; Secure; SameSite=Strict; Expires=${new Date(jwtToken.expires + gracePeriod).toUTCString()}`
+			},
+		});
+	} catch (error) {
+		if (error instanceof Error) {
+			console.error(error);
+			errorMsg = error.message;
+		}
+	}
+}
+
+---
+
+<Base>
+    <Image src={logo} alt="Shrugging shoulders with a volley ball as the head." />
+
+	<h2>Erlo!</h2>
+	<p>Press the button below for data</p>
+
+	{
+		errorMsg && (
+			<p class="text-red-500 mt-10">Error: {errorMsg}</p>
+		)
+	}
+
+	{
+		(session || Astro.url.searchParams.get("checkSession")) && (
+			<section class="flex flex-col items-center justify-center grow mb-56">
+			    <p>logged in</p>
+			</section>
+		)
+
+	}
+
+	{
+		!session && !Astro.url.searchParams.get("checkSession") && (
+			<a href=`https://slack.com/openid/connect/authorize?scope=openid%20email%20profile&response_type=code&redirect_uri=${Astro.url.origin}&client_id=${import.meta.env.SLACK_CLIENT_ID}` class="border-solid border-2 rounded-md border-accent w-fit p-2 self-center mt-8">Sign in with Slack</a>
+		)
+	}
+</Base>

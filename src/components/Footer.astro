@@ -1,0 +1,40 @@
+---
+import "../styles/base.css";
+
+import { version } from "../../package.json";
+const url = Astro.url.host;
+---
+
+<footer
+    class="flex justify-between w-full text-text-tertiary dark:text-text-dark-tertiary items-center gap-x-4"
+>
+    <div class="text-xs font-mono font-semibold">
+        {version} @ {url}
+    </div>
+    <div class="font-semibold text-sm text-center">
+        Made with 🫶 by
+        <a
+            href="https://github.com/taciturnaxolotl"
+            class="text-text dark:text-text-dark hover:text-accent dark:hover:text-accent"
+            >Kieran Klukas</a
+        >
+        as
+        <a
+            href="https://github.com/taciturnaxolotl/echelon"
+            class="text-text dark:text-text-dark hover:text-accent dark:hover:text-accent"
+            >open-source</a
+        >
+        software.
+    </div>
+    <div class="text-sm">
+        <a
+            href="imprint"
+            class="text-text dark:text-text-dark hover:text-accent dark:hover:text-accent"
+        >
+            &copy; 2025 to present under <a
+                href="https://github.com/taciturnaxolotl/echelon/blob/master/LICENSE.md"
+                >AGPL 3.0</a
+            >
+        </a>
+    </div>
+</footer>

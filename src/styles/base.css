@@ -1,0 +1,56 @@
+@import "tailwindcss";
+@theme {
+    --color-text: oklch(26.33% 0.04 91.04);
+    --color-text-dark: oklch(94% 0.033 91.67);
+    --color-background: oklch(87.84% 0.001 197.14);
+    --color-background-dark: oklch(31% 0.007 229.04);
+    --color: oklch(73.01% 0.146 74.32);
+    --color-dark: oklch(65.87% 0.146 74.32);
+    --color: oklch(75.31% 0.04 200.43);
+    --color-dark: oklch(50.08% 0.042 200.2);
+    --color-accent: oklch(67.61% 0.114 293.1);
+    --color-accent-dark: oklch(46.02% 0.127 287.87);
+}
+
+/* Base definition */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family:
+        Superclarendon, "Bookman Old Style", "URW Bookman", "URW Bookman L",
+        "Georgia Pro", Georgia, serif;
+}
+
+body {
+    font-family:
+        ui-rounded, "Hiragino Maru Gothic ProN", Quicksand, Comfortaa, Manjari,
+        "Arial Rounded MT", "Arial Rounded MT Bold", Calibri, source-sans-pro,
+        sans-serif;
+}
+
+h1 {
+    @apply text-4xl font-semibold antialiased mb-1 leading-snug;
+}
+
+h2 {
+    @apply text-3xl font-semibold antialiased mb-1 leading-snug;
+}
+
+h3 {
+    @apply text-2xl font-semibold antialiased mb-1 leading-snug;
+}
+
+h4 {
+    @apply text-xl font-semibold antialiased mb-1 leading-snug;
+}
+
+h5 {
+    @apply text-lg font-semibold antialiased mb-1 leading-snug;
+}
+
+a {
+    @apply font-semibold text-text dark:text-text-dark hover:text-accent dark:hover:text-accent;
+}

@@ -1,12 +1,12 @@
 <h3 align="center">
-    <img src="https://raw.githubusercontent.com/taciturnaxolotl/carriage/master/.github/images/carriage.webp" width="200" alt="Logo"/><br/>
+    <img src="https://raw.githubusercontent.com/taciturnaxolotl/echelon/master/src/assets/echelon.png" width="200" alt="Logo"/><br/>
     <img src="https://raw.githubusercontent.com/taciturnaxolotl/carriage/master/.github/images/transparent.png" height="45" width="0px"/>
-    <span>Carriage</span>
+    <span>Echelon</span>
     <img src="https://raw.githubusercontent.com/taciturnaxolotl/carriage/master/.github/images/transparent.png" height="30" width="0px"/>
 </h3>
 
 <p align="center">
-    <i>A train carriage can be anything you want it to be and is a container for storing things so that seems like an appropriate name</i>
+    <i>noun - A similar formation of groups, units, or individuals. </i>
 </p>
 
 <p align="center">
@@ -15,7 +15,29 @@
 
 ## What's this?
 
-This is my personal template repo! It serves as the reference for my `README.md` formating style and ~~hopefully soon my license scheme~~.
+It's a project I made to display stats about how many channels you are in on slack! Eventually I want to add a bluesky streak feature too.
+
+## Dev
+
+for the env file, you need to have the following variables:
+
+```env
+NODE_ENV="dev"
+JWT_SECRET=
+ARCJET_KEY=
+SLACK_CLIENT_ID=
+SLACK_CLIENT_SECRET=
+```
+
+then you also need a slack app which can be created from the [`manifest.yaml`](/manifest.yaml) file.
+
+The jwt can be created with the following command:
+
+```bash
+openssl rand -hex 128
+```
+
+You can get your arcjet key from the [arcjet website](https://arcjet.com/).
 
 ## Why that License?
 
@@ -39,5 +61,5 @@ Basically if you distribute the code publicaly you have to share the code, but i
 </p>
 
 <p align="center">
-	<a href="https://github.com/taciturnaxolotl/carriage/blob/master/LICENSE.md"><img src="https://img.shields.io/static/v1.svg?style=for-the-badge&label=License&message=AGPL 3.0&logoColor=d9e0ee&colorA=363a4f&colorB=b7bdf8"/></a>
+	<a href="https://github.com/taciturnaxolotl/echelon/blob/master/LICENSE.md"><img src="https://img.shields.io/static/v1.svg?style=for-the-badge&label=License&message=AGPL 3.0&logoColor=d9e0ee&colorA=363a4f&colorB=b7bdf8"/></a>
 </p>
