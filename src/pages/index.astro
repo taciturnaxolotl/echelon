@@ -49,32 +49,206 @@ if (
 	}
 }
 
+console.log(session);
+
+interface SlackResponse {
+		ok: boolean;
+		channels?: Array<{
+				id: string;
+				name: string;
+				is_channel: boolean;
+				is_group: boolean;
+				is_im: boolean;
+				created: number;
+				creator: string;
+				is_archived: boolean;
+				is_general: boolean;
+				unlinked: number;
+				name_normalized: string;
+				is_shared: boolean;
+				is_ext_shared: boolean;
+				is_org_shared: boolean;
+				pending_shared: unknown[];
+				is_pending_ext_shared: boolean;
+				is_member: boolean;
+				is_private: boolean;
+				is_mpim: boolean;
+				updated: number;
+				topic: {
+						value: string;
+						creator: string;
+						last_set: number;
+				};
+				purpose: {
+						value: string;
+						creator: string;
+						last_set: number;
+				};
+				previous_names: string[];
+				num_members: number;
+		}>;
+		response_metadata?: {
+				next_cursor?: string;
+		};
+}
 ---
 
 <Base>
-    <Image src={logo} alt="Shrugging shoulders with a volley ball as the head." />
+	<Image src={logo} alt="Shrugging shoulders with a volley ball as the head." />
 
 	<h2>Erlo!</h2>
-	<p>Press the button below for data</p>
 
 	{
 		errorMsg && (
 			<p class="text-red-500 mt-10">Error: {errorMsg}</p>
 		)
-	}
+		}
+
+		{
+			(session) && (
+			<div id="channel-stats" data-token={session?.token} class="flex justify-center">
+				<table class="mt-8">
+					<thead>
+						<tr>
+							<th class="px-4 py-2">Channel Type</th>
+							<th class="px-4 py-2">Count</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="px-4 py-2">Public Channels</td>
+							<td class="px-4 py-2" id="public-count">0</td>
+						</tr>
+						<tr>
+							<td class="px-4 py-2">Private Channels</td>
+							<td class="px-4 py-2" id="private-count">0</td>
+						</tr>
+						<tr>
+							<td class="px-4 py-2">Direct Messages</td>
+							<td class="px-4 py-2" id="dm-count">0</td>
+						</tr>
+						<tr>
+							<td class="px-4 py-2">Group Messages</td>
+							<td class="px-4 py-2" id="group-count">0</td>
+						</tr>
+					</tbody>
+				</table>
+
+					<script>
+						const stats = document.getElementById('channel-stats');
+						const token = stats?.dataset.token;
+
+						export interface Channel {
+                         id:                    string;
+                          name:                  string;
+                          is_channel:            boolean;
+                          is_group:              boolean;
+                          is_im:                 boolean;
+                          created:               number;
+                          creator:               string;
+                          is_archived:           boolean;
+                          is_general:            boolean;
+                          unlinked:              number;
+                          name_normalized:       string;
+                          is_shared:             boolean;
+                          is_ext_shared:         boolean;
+                          is_org_shared:         boolean;
+                          pending_shared:        any[];
+                          is_pending_ext_shared: boolean;
+                          is_private:            boolean;
+                          is_mpim:               boolean;
+                          topic:                 Purpose;
+                          purpose:               Purpose;
+                          previous_names:        any[];
+                        }
+
+                        export interface Purpose {
+                            value:    string;
+                            creator:  string;
+                            last_set: number;
+                        }
+
+
+                        let channels: {
+                         public: Channel[],
+                         private: Channel[],
+                         dm: Channel[],
+                         group: Channel[]
+                        } = {
+                          public: [],
+                          private: [],
+                          dm: [],
+                          group: []
+                        };
+
+						function updateDisplay() {
+							const publicEl = document.getElementById('public-count');
+							const privateEl = document.getElementById('private-count');
+							const dmEl = document.getElementById('dm-count');
+							const groupEl = document.getElementById('group-count');
+
+							if (publicEl) publicEl.textContent = channels.public.length.toString();
+							if (privateEl) privateEl.textContent = channels.private.length.toString();
+							if (dmEl) dmEl.textContent = channels.dm.length.toString();
+							if (groupEl) groupEl.textContent = channels.group.length.toString();
+						}
+
+						if (token) {
+                          let cursor = "";
+
+                          do {
+                            const response = await fetch(`/api/channels${cursor ? "?cursor=" + cursor : ""}`, {
+                              headers: {
+                                Authorization: `Bearer ${token}`,
+                              },
+                            });
+
+                            if (response.status === 429) {
+                                const retryAfter = response.headers.get('Retry-After');
+                                if (retryAfter) {
+                                    await new Promise(resolve => setTimeout(resolve, parseInt(retryAfter) * 1000));
+                                    continue;
+                                }
+                            }
+
+                            const result = await response.json();
+
+                            if (!result.ok) {
+                              throw new Error(result.error);
+                            }
+
+                            if (result.channels) {
+                              for (const channel of result.channels) {
+                                if (channel.is_channel && !channel.is_private) channels.public.push(channel);
+                                else if ((channel.is_channel || channel.is_group) && channel.is_private && !channel.is_mpim) channels.private.push(channel);
+                                else if (channel.is_im) channels.dm.push(channel);
+                                else if (channel.is_mpim || (!channel.is_channel && channel.is_private)) channels.group.push(channel);
+                              }
+                            }
+                            cursor = result.response_metadata?.next_cursor!;
+                            console.log(cursor);
+
+                            updateDisplay();
+                          } while (cursor);
+						}
+					</script>
+				</div>
+			)
+		}
 
 	{
-		(session || Astro.url.searchParams.get("checkSession")) && (
-			<section class="flex flex-col items-center justify-center grow mb-56">
-			    <p>logged in</p>
-			</section>
+	   !session && Astro.url.searchParams.get("checkSession") && (
+			<p>Press the button below for data</p>
+    		<a href="/" class="border-solid border-2 rounded-md border-accent w-fit p-2 self-center mt-8">How many channels do I have?</a>
 		)
-
 	}
+
+	<span class="mb-10" />
 
 	{
 		!session && !Astro.url.searchParams.get("checkSession") && (
-			<a href=`https://slack.com/openid/connect/authorize?scope=openid%20email%20profile&response_type=code&redirect_uri=${Astro.url.origin}&client_id=${import.meta.env.SLACK_CLIENT_ID}` class="border-solid border-2 rounded-md border-accent w-fit p-2 self-center mt-8">Sign in with Slack</a>
-		)
+    		<p>Press the button below for data</p>
+    		<a href=`https://slack.com/oauth/v2/authorize?scope=&amp;user_scope=channels%3Aread%2Cgroups%3Aread%2Cim%3Aread%2Cmpim%3Aread%2Cteam%3Aread%2Cusers%3Aread&redirect_uri=${Astro.url.origin}&client_id=${import.meta.env.SLACK_CLIENT_ID}` class="border-solid border-2 rounded-md border-accent w-fit p-2 self-center mt-8">Sign in with Slack</a>
+    		)
 	}
 </Base>
