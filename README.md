@@ -17,6 +17,9 @@
 
 It's a project I made to display stats about how many channels you are in on slack! Eventually I want to add a bluesky streak feature too.
 
+>[!WARNING]
+> I made this project for fun amd it will likely not be maintained. If you want to use it you can most likely use the hosted version [here](https://echelon.dunkirk.sh/) but I make no guarantees about it's uptime or whether it works in the future. As of `2025.02.15` it is fully functional and there are no known bugs. 
+
 ## Dev
 
 for the env file, you need to have the following variables:
