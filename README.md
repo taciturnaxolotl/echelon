@@ -40,6 +40,14 @@ openssl rand -hex 128
 
 You can get your arcjet key from the [arcjet website](https://arcjet.com/).
 
+### Screenshots
+
+The slack page with my data:
+![slack page](https://raw.githubusercontent.com/taciturnaxolotl/echelon/master/.github/images/slack.webp)
+
+And the bluesky page:
+![bluesky page](https://raw.githubusercontent.com/taciturnaxolotl/echelon/master/.github/images/bluesky.webp)
+
 ## Why that License?
 
 Well I like using the AGPL 3.0 license because it's a strong copyleft license that ensures that any changes made to the code are shared back with the community. However there is often alot of confusion about how the license works. Here are 3 brief cases showing how the AGPL 3.0 license works:
