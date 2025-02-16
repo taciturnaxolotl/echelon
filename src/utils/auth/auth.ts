@@ -5,6 +5,7 @@ const { encode, decode } = jwt;
 export interface Session {
   id: number;
   dateCreated: number;
+  token: string;
   profile: {
     id: string;
     name: string;
@@ -80,7 +81,7 @@ export async function createSession(
 
     // get user profile
     const profileResponse = await fetch(
-      "https://slack.com/api/openid.connect.userInfo",
+      `https://slack.com/api/users.info?user=${initialSlackResponse.authed_user.id}`,
       {
         method: "GET",
         headers: {
@@ -127,6 +128,7 @@ export async function createSession(
     const partialSession: PartialSession = {
       id: Number.parseInt(profileData["https://slack.com/user_id"]),
       dateCreated: Date.now(),
+      token: initialSlackResponse.authed_user.access_token,
       profile: {
         id: profileData.sub,
         name: profileData.given_name,

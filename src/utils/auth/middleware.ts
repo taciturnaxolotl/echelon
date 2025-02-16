@@ -16,7 +16,7 @@ export const auth = defineMiddleware(async (context, next) => {
 
   // Ignore auth validation for public routes
   if (
-    PUBLIC_ROUTES.includes(context.url.pathname) &&
+    // PUBLIC_ROUTES.includes(context.url.pathname) &&
     sessionCookie === undefined
   ) {
     // Respond as usual
