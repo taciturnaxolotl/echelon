@@ -137,52 +137,9 @@ const bluesky = Astro.url.searchParams.get("bluesky");
 					</tbody>
 				</table>
 
-					<script>
+					<script is:inline>
 						const stats = document.getElementById('channel-stats');
 						const token = stats?.dataset.token;
-
-						export interface Channel {
-                         id:                    string;
-                          name:                  string;
-                          is_channel:            boolean;
-                          is_group:              boolean;
-                          is_im:                 boolean;
-                          created:               number;
-                          creator:               string;
-                          is_archived:           boolean;
-                          is_general:            boolean;
-                          unlinked:              number;
-                          name_normalized:       string;
-                          is_shared:             boolean;
-                          is_ext_shared:         boolean;
-                          is_org_shared:         boolean;
-                          pending_shared:        any[];
-                          is_pending_ext_shared: boolean;
-                          is_private:            boolean;
-                          is_mpim:               boolean;
-                          topic:                 Purpose;
-                          purpose:               Purpose;
-                          previous_names:        any[];
-                        }
-
-                        export interface Purpose {
-                            value:    string;
-                            creator:  string;
-                            last_set: number;
-                        }
-
-
-                        let channels: {
-                         public: Channel[],
-                         private: Channel[],
-                         dm: Channel[],
-                         group: Channel[]
-                        } = {
-                          public: [],
-                          private: [],
-                          dm: [],
-                          group: []
-                        };
 
 						function updateDisplay() {
 							const publicEl = document.getElementById('public-count');
@@ -228,7 +185,7 @@ const bluesky = Astro.url.searchParams.get("bluesky");
                                 else if (channel.is_mpim || (!channel.is_channel && channel.is_private)) channels.group.push(channel);
                               }
                             }
-                            cursor = result.response_metadata?.next_cursor!;
+                            cursor = result.response_metadata?.next_cursor;
                             console.log(cursor);
 
                             updateDisplay();
@@ -270,10 +227,14 @@ const bluesky = Astro.url.searchParams.get("bluesky");
 								<td class="px-4 py-2">Same?</td>
 								<td class="px-4 py-2" id="is-same">Loading...</td>
 							</tr>
+							<tr>
+								<td class="px-4 py-2">Most Posts in a Day</td>
+								<td class="px-4 py-2" id="most-posts">Loading...</td>
+							</tr>
 						</tbody>
 					</table>
 
-					<script>
+					<script is:inline>
 						const streakSection = document.getElementById('streaks-section');
 						const username = streakSection?.dataset.username;
 
@@ -293,30 +254,63 @@ const bluesky = Astro.url.searchParams.get("bluesky");
 								let currentDate = new Date();
 								currentDate.setHours(0,0,0,0);
 
-								const postDates = data.posts.map(post => new Date(post.post.record.createdAt));
-
-								let streak = 0;
-								for (let i = 0; i < postDates.length; i++) {
-									const postDate = new Date(postDates[i]);
-									const expectedDate = new Date(currentDate);
-									expectedDate.setDate(currentDate.getDate() - i);
-
-									if (postDate.getTime() === expectedDate.getTime()) {
-										streak++;
-										if (i === 0) currentStreak = streak;
-										if (streak > longestStreak) longestStreak = streak;
-									} else {
-										streak = 0;
+								// Get all posts grouped by date
+								const postsByDate = data.posts.reduce((acc, post) => {
+									const date = new Date(post.post.indexedAt);
+									date.setHours(0,0,0,0);
+									const dateStr = date.getTime().toString();
+									if (!acc[dateStr]) {
+										acc[dateStr] = [];
 									}
+									acc[dateStr].push(post);
+									return acc;
+								}, {});
+
+								// Find most posts in a day
+								const mostPosts = Math.max(...Object.values(postsByDate).map(posts => posts.length));
+
+								// Get unique dates only
+								const postDates = Object.keys(postsByDate)
+									.map(timestamp => new Date(parseInt(timestamp)))
+									.sort((a, b) => b.getTime() - a.getTime());
+
+								let streakStart = 0;
+								let lastDate = postDates[0];
+
+								for (let i = 1; i < postDates.length; i++) {
+									const dayDiff = Math.floor((lastDate.getTime() - postDates[i].getTime()) / (1000 * 60 * 60 * 24));
+
+									if (dayDiff > 1) {
+										const streakLength = i - streakStart;
+										if (streakLength > longestStreak) {
+											longestStreak = streakLength;
+										}
+										if (streakStart === 0) {
+											currentStreak = streakLength;
+										}
+										streakStart = i;
+									}
+									lastDate = postDates[i];
+								}
+
+								// Handle the last streak
+								const finalStreakLength = postDates.length - streakStart;
+								if (finalStreakLength > longestStreak) {
+									longestStreak = finalStreakLength;
+								}
+								if (streakStart === 0) {
+									currentStreak = finalStreakLength;
 								}
 
 								const currentStreakEl = document.getElementById('current-streak');
 								const longestStreakEl = document.getElementById('longest-streak');
 								const isSameEl = document.getElementById('is-same');
+								const mostPostsEl = document.getElementById('most-posts');
 
 								if (currentStreakEl) currentStreakEl.textContent = currentStreak.toString();
 								if (longestStreakEl) longestStreakEl.textContent = longestStreak.toString();
 								if (isSameEl) isSameEl.textContent = (currentStreak === longestStreak ? "Yes" : "No");
+								if (mostPostsEl) mostPostsEl.textContent = mostPosts.toString();
 							})();
 						}
 					</script>

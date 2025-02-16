@@ -14,12 +14,18 @@ export const GET: APIRoute = async ({ params, request }) => {
 
   try {
     const profile = await agent.getProfile({ actor: username });
-    const posts = await agent.getAuthorFeed({ actor: username });
+    const allPosts = [];
+    let cursor = undefined;
+    do {
+      const posts = await agent.getAuthorFeed({ actor: username, cursor });
+      allPosts.push(...posts.data.feed);
+      cursor = posts.data.cursor;
+    } while (cursor);
 
     return new Response(
       JSON.stringify({
         profile: profile.data,
-        posts: posts.data.feed,
+        posts: allPosts,
       }),
     );
   } catch (error) {
