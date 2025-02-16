@@ -1,0 +1,20 @@
+display_information:
+  name: Echelon
+  description: oauth for echelon
+  background_color: "#6879ab"
+oauth_config:
+  redirect_urls:
+    - http://localhost:4321
+  scopes:
+    user:
+      - channels:read
+      - groups:read
+      - im:read
+      - mpim:read
+      - users:read
+      - team:read
+settings:
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false
+
