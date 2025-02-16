@@ -141,6 +141,13 @@ const bluesky = Astro.url.searchParams.get("bluesky");
 						const stats = document.getElementById('channel-stats');
 						const token = stats?.dataset.token;
 
+                        let channels = {
+                          public: [],
+                          private: [],
+                          dm: [],
+                          group: []
+                        };
+
 						function updateDisplay() {
 							const publicEl = document.getElementById('public-count');
 							const privateEl = document.getElementById('private-count');
@@ -154,42 +161,44 @@ const bluesky = Astro.url.searchParams.get("bluesky");
 						}
 
 						if (token) {
-                          let cursor = "";
+							(async () => {
+									let cursor = "";
 
-                          do {
-                            const response = await fetch(`/api/channels${cursor ? "?cursor=" + cursor : ""}`, {
-                              headers: {
-                                Authorization: `Bearer ${token}`,
-                              },
-                            });
+									do {
+											const response = await fetch(`/api/channels${cursor ? "?cursor=" + cursor : ""}`, {
+													headers: {
+															Authorization: `Bearer ${token}`,
+													},
+											});
 
-                            if (response.status === 429) {
-                                const retryAfter = response.headers.get('Retry-After');
-                                if (retryAfter) {
-                                    await new Promise(resolve => setTimeout(resolve, parseInt(retryAfter) * 1000));
-                                    continue;
-                                }
-                            }
+											if (response.status === 429) {
+															const retryAfter = response.headers.get('Retry-After');
+															if (retryAfter) {
+																			await new Promise(resolve => setTimeout(resolve, parseInt(retryAfter) * 1000));
+																			continue;
+															}
+											}
 
-                            const result = await response.json();
+											const result = await response.json();
 
-                            if (!result.ok) {
-                              throw new Error(result.error);
-                            }
+											if (!result.ok) {
+													throw new Error(result.error);
+											}
 
-                            if (result.channels) {
-                              for (const channel of result.channels) {
-                                if (channel.is_channel && !channel.is_private) channels.public.push(channel);
-                                else if ((channel.is_channel || channel.is_group) && channel.is_private && !channel.is_mpim) channels.private.push(channel);
-                                else if (channel.is_im) channels.dm.push(channel);
-                                else if (channel.is_mpim || (!channel.is_channel && channel.is_private)) channels.group.push(channel);
-                              }
-                            }
-                            cursor = result.response_metadata?.next_cursor;
-                            console.log(cursor);
+											if (result.channels) {
+													for (const channel of result.channels) {
+															if (channel.is_channel && !channel.is_private) channels.public.push(channel);
+															else if ((channel.is_channel || channel.is_group) && channel.is_private && !channel.is_mpim) channels.private.push(channel);
+															else if (channel.is_im) channels.dm.push(channel);
+															else if (channel.is_mpim || (!channel.is_channel && channel.is_private)) channels.group.push(channel);
+													}
+											}
+											cursor = result.response_metadata?.next_cursor;
+											console.log(cursor);
 
-                            updateDisplay();
-                          } while (cursor);
+											updateDisplay();
+									} while (cursor);
+							})();
 						}
 					</script>
 				</div>
