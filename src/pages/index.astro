@@ -91,6 +91,8 @@ interface SlackResponse {
 				next_cursor?: string;
 		};
 }
+
+const bluesky = Astro.url.searchParams.get("bluesky");
 ---
 
 <Base>
@@ -98,14 +100,15 @@ interface SlackResponse {
 
 	<h2>Erlo!</h2>
 
-	{
+	   {
 		errorMsg && (
 			<p class="text-red-500 mt-10">Error: {errorMsg}</p>
 		)
 		}
 
 		{
-			(session) && (
+			(session && !bluesky) && (
+			<p>Slack Data</p>
 			<div id="channel-stats" data-token={session?.token} class="flex justify-center">
 				<table class="mt-8">
 					<thead>
@@ -237,11 +240,95 @@ interface SlackResponse {
 		}
 
 	{
-	   !session && Astro.url.searchParams.get("checkSession") && (
+	   !session && Astro.url.searchParams.get("checkSession") && !bluesky && (
 			<p>Press the button below for data</p>
     		<a href="/" class="border-solid border-2 rounded-md border-accent w-fit p-2 self-center mt-8">How many channels do I have?</a>
 		)
 	}
+
+	{
+	   bluesky && (
+				<p>Bluesky Data</p>
+				<div id="streaks-section" data-username={bluesky} class="flex justify-center">
+					<table class="mt-8">
+						<thead>
+							<tr>
+								<th class="px-4 py-2">Streak Type</th>
+								<th class="px-4 py-2">Days</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td class="px-4 py-2">Current Streak</td>
+								<td class="px-4 py-2" id="current-streak">Loading...</td>
+							</tr>
+							<tr>
+								<td class="px-4 py-2">Longest Streak</td>
+								<td class="px-4 py-2" id="longest-streak">Loading...</td>
+							</tr>
+							<tr>
+								<td class="px-4 py-2">Same?</td>
+								<td class="px-4 py-2" id="is-same">Loading...</td>
+							</tr>
+						</tbody>
+					</table>
+
+					<script>
+						const streakSection = document.getElementById('streaks-section');
+						const username = streakSection?.dataset.username;
+
+						console.log(username);
+
+						if (username) {
+							(async () => {
+								const response = await fetch(`/api/bluesky-posts?username=${username}`);
+								const data = await response.json();
+
+								if (!response.ok) {
+									throw new Error("Failed to fetch data");
+								}
+
+								let currentStreak = 0;
+								let longestStreak = 0;
+								let currentDate = new Date();
+								currentDate.setHours(0,0,0,0);
+
+								const postDates = data.posts.map(post => new Date(post.post.record.createdAt));
+
+								let streak = 0;
+								for (let i = 0; i < postDates.length; i++) {
+									const postDate = new Date(postDates[i]);
+									const expectedDate = new Date(currentDate);
+									expectedDate.setDate(currentDate.getDate() - i);
+
+									if (postDate.getTime() === expectedDate.getTime()) {
+										streak++;
+										if (i === 0) currentStreak = streak;
+										if (streak > longestStreak) longestStreak = streak;
+									} else {
+										streak = 0;
+									}
+								}
+
+								const currentStreakEl = document.getElementById('current-streak');
+								const longestStreakEl = document.getElementById('longest-streak');
+								const isSameEl = document.getElementById('is-same');
+
+								if (currentStreakEl) currentStreakEl.textContent = currentStreak.toString();
+								if (longestStreakEl) longestStreakEl.textContent = longestStreak.toString();
+								if (isSameEl) isSameEl.textContent = (currentStreak === longestStreak ? "Yes" : "No");
+							})();
+						}
+					</script>
+				</div>
+				<a href={`/`} class="border-solid border-2 rounded-md border-accent p-2 mt-4">Switch back to Slack Data</a>
+		)
+	}
+
+	<div class="flex flex-col items-center mt-4">
+		<input type="text" id="bluesky-username" placeholder="Enter Bluesky username" class="p-2 border rounded-md mb-2" />
+		<a href="#" id="submit-bluesky" onclick="window.location.href='?' + new URLSearchParams({bluesky: document.getElementById('bluesky-username').value})" class="border-solid border-2 rounded-md border-accent p-2">Submit Bluesky Username</a>
+	</div>
 
 	<span class="mb-10" />
 

@@ -27,6 +27,7 @@ JWT_SECRET=
 ARCJET_KEY=
 SLACK_CLIENT_ID=
 SLACK_CLIENT_SECRET=
+BLUESKY_PASS=
 ```
 
 then you also need a slack app which can be created from the [`manifest.yaml`](/manifest.yaml) file.
